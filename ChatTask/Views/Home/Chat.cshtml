@@ -8,14 +8,13 @@
         <ul>
             @foreach (AppUser user in Model)
             {
-                <li  id="@user.Id">
+                <li class="user-item" id="@user.Id">
                     <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/chat_avatar_01.jpg" alt="">
                     <div>
                         <h2>@user.FullName</h2>
                         <h3>
                             <span class="status @(user.ConnectionId==null?"bc-offline":"bc-online")"></span>
-                            <button style="height:39px!important" class="btn btn-outline-success sendPrivate">Send</button>
-                            <input  data-id="@user.ConnectionId" type="hidden" class="getConnection"/>
+                            @*<button style="height:39px!important" class="btn btn-outline-success sendPrivate">Send</button>*@
                         </h3>
                     </div>
                 </li>
@@ -28,6 +27,7 @@
         <footer>
             <form action="/" method="post">
                 <span id="Name">@User.Identity.Name</span>
+                <input name="receiverId" type="hidden" value="" id="receiverIdInput" />
                 <input id="messageInput" placeholder="Type your message"><br /><br />
             </form>
             <a id="sendMsg" href="#">Send</a>
@@ -323,32 +323,35 @@
 
         $("#sendMsg").click(function () {
 
-            var name = $("#Name").innerHTML
+            var receiverId = $("#receiverIdInput").val()
             var message = $("#messageInput").val();
 
-            //alert(`${name} says: ${message}`);
 
-            connection.invoke("SendMessage", name, message);
+            connection.invoke("SendMessage", receiverId, message);
         });
 
+        $(".user-item").click(function () {
+            let userId = $(this).attr("id")
+            $("#receiverIdInput").val(userId);
+        })
         ///////////////////////////////////////////
-        $(".sendPrivate").click(function () {
-            var name = $("#Name").innerHTML
-            var message = $("#messageInput").val();
+        //$(".sendPrivate").click(function () {
+        //    var name = $("#Name").innerHTML
+        //    var message = $("#messageInput").val();
 
-            var connectionId = $(".getConnection").attr("data-id");
-            //alert(connectionId)
-            connection.invoke("SendPrivateMessage", name, message, connectionId)
+        //    var connectionId = $(".getConnection").attr("data-id");
+        //    alert(connectionId)
+        //    connection.invoke("SendPrivateMessage", name, message, connectionId)
 
-        })
-        //////////////////////////////////////////
-        connection.on("ReceiveSpecificMessage", function (name, message ) {
+        //})
+        ////////////////////////////////////////////
+        //connection.on("ReceiveSpecificMessage", function (name, message ) {
 
-            var li = document.createElement("li")
-            var chatBox = document.getElementById("chat");
-            chatBox.appendChild(li);
-            li.innerHTML = `${name} : ${message}`
-        })
+        //    var li = document.createElement("li")
+        //    var chatBox = document.getElementById("chat");
+        //    chatBox.appendChild(li);
+        //    li.innerHTML = `${name} : ${message}`
+        //})
 
 
 

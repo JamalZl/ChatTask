@@ -17,15 +17,34 @@ namespace ChatTask.Hubs
             _userManager = userManager;
             _hubContext = hubContext;
         }
-        public async Task SendMessage(string name,string message)
+        public async Task SendMessage(string receiverUserId,string message)
         {
-            AppUser user = _userManager.FindByNameAsync(Context.User.Identity.Name).Result;
-            await Clients.All.SendAsync("ReceiveMessage", name, message, DateTime.Now.ToString("MMMM dd HH"));
+
+            if (Context.User.Identity.IsAuthenticated)
+            {
+                AppUser user = _userManager.FindByNameAsync(Context.User.Identity.Name).Result;
+                if (string.IsNullOrWhiteSpace(receiverUserId))
+                {
+                    await Clients.All.SendAsync("ReceiveMessage", user.FullName, message, DateTime.Now.ToString("MMMM dd HH"));
+
+                }
+                else
+                {
+                    AppUser receiverUser = _userManager.FindByIdAsync(receiverUserId).Result;
+
+                    if (receiverUser.ConnectionId!=null)
+                    {
+                        await Clients.Client(receiverUser.ConnectionId).SendAsync("ReceiveMessage", user.FullName, message, DateTime.Now.ToString("MMMM dd HH"));
+                    }
+                }
+
+            }
+
         }
-        public async Task SendPrivateMessage(string name, string message,string connectionId)
-        { 
-           await Clients.Client(connectionId).SendAsync("ReceiveSpecificMessage", name, message);
-        }
+        //public async Task SendPrivateMessage(string name, string message,string connectionId)
+        //{ 
+        //   await Clients.Client(connectionId).SendAsync("ReceiveSpecificMessage", name, message);
+        //}
 
         public override Task OnConnectedAsync()
         {
